@@ -4,56 +4,14 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 6b1ad54f-61e4-490d-9032-7a557e8dc82f
-md"""
-## CHEME 5440/7770: Structural Analysis of the Urea Cycle (PS2)
-"""
-
-# ╔═╡ 7057c8e4-9e94-4a28-a885-07f5c96ebe39
-html"""
-<p style="font-size:20px;">Yujia Huang, yh945</br>
-Smith School of Chemical and Biomolecular Engineering, Cornell University, Ithaca NY 14850</p>
-"""
-
-# ╔═╡ 6970dab5-16bd-4898-b88d-723cb1b3d89e
-md"""
-#### Convex analysis: compute the extreme pathways
-"""
-
-# ╔═╡ b473b17e-3bf5-4b6c-af24-fe57b5a7e7e9
-md"""
-#### Metabolite connectivity array (MCA)
-"""
-
-# ╔═╡ 999ae1fd-5341-4f66-9db2-dec53fa0cd49
-begin
-	# fill me in ...
-end
-
-# ╔═╡ b7e5d1a6-57ed-4d09-a039-a4bd12386367
-md"""
-#### Reaction connectivity array (RCA)
-"""
-
-# ╔═╡ 4520fc6e-7305-487e-924d-af22406e6d45
-begin
-	# fill me in ...
-end
-
-# ╔═╡ 267865de-1b5c-4579-861b-c6c46beb4739
-function ingredients(path::String)
-	
-	# this is from the Julia source code (evalfile in base/loading.jl)
-	# but with the modification that it returns the module instead of the last object
-	name = Symbol("lib")
-	m = Module(name)
-	Core.eval(m,
-        Expr(:toplevel,
-             :(eval(x) = $(Expr(:core, :eval))($name, x)),
-             :(include(x) = $(Expr(:top, :include))($name, x)),
-             :(include(mapexpr::Function, x) = $(Expr(:top, :include))(mapexpr, $name, x)),
-             :(include($path))))
-	m
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
 end
 
 # ╔═╡ 67f5db98-88d0-11ec-27ac-b57538a166f4
@@ -63,73 +21,113 @@ begin
 	using PrettyTables
 	using LinearAlgebra
 	using Plots
-	
-	# setup paths -
-	const _PATH_TO_NOTEBOOK = pwd()
-	const _PATH_TO_SRC = joinpath(_PATH_TO_NOTEBOOK,"src")
-
-	# load the PS2 code lib -
-	lib = ingredients(joinpath(_PATH_TO_SRC, "Include.jl"));
-
-	# return -
-	nothing
 end
 
-# ╔═╡ 5338451e-3c4b-4030-bbbb-42eaf4209a89
-begin
-	# Setup a collection of reaction strings -
-	reaction_array = Array{String,1}()
+# ╔═╡ 6b1ad54f-61e4-490d-9032-7a557e8dc82f
+md"""
+## CHEME 5440/7770: Prelim 1 solution 2&3 
+"""
 
-	# Setup a collection of reaction strings -
-	reaction_array = Array{String,1}()
+# ╔═╡ 7057c8e4-9e94-4a28-a885-07f5c96ebe39
+html"""
+<p style="font-size:20px;">Yujia Huang, yh945</br>
+Smith School of Chemical and Biomolecular Engineering, Cornell University, Ithaca NY 14850</p>
+"""
 
-	# encode the reactions -
-	# internal reactions -
-	push!(reaction_array,"v1,ATP+L-citrulline+L-aspartate,AMP+diphosphate+2-(Nomega-L-arginino)succinate,false")
-	push!(reaction_array,"v2,2-(Nomega-L-arginino)succinate,fumarate+L-arginine,false")
-	push!(reaction_array,"v3,L-arginine+H2O,L-ornithine+urea,false")
-	push!(reaction_array,"v4,carbamoyl phosphate+L-ornithine,phosphate+L-citrulline,false")
-	push!(reaction_array,"v5,2*L-arginine+3*NADPH+3*H_cat+4*O2,2*L-citrulline+2*nitric oxide+3*NADP_cat+4*H2O,true")
+# ╔═╡ cfca732a-d328-4f81-aa05-9e041a686924
+md"""
+##### 2. a） Formulate a three micro-state model for PEK activity
+"""
 
-	# exchange reactions -
-	push!(reaction_array,"b1,∅,ATP,false")
-	push!(reaction_array,"b2,∅,L-aspartate,false")
-	push!(reaction_array,"b3,AMP,∅,false")
-	push!(reaction_array,"b4,fumarate,∅,false")
-	push!(reaction_array,"b5,diphosphate,∅,false")
-	push!(reaction_array,"b6,H2O,∅,true")
-	push!(reaction_array,"b7,urea,∅,false")
-	push!(reaction_array,"b8,∅,carbamoyl phosphate,false")
-	push!(reaction_array,"b9,phosphate,∅,false")
-	push!(reaction_array,"b10,∅,NADPH,false")
-	push!(reaction_array,"b11,∅,H_cat,false")
-	push!(reaction_array,"b12,∅,O2,false")
-	push!(reaction_array,"b13,nitric oxide,∅,false")
-	push!(reaction_array,"b14,NADP_cat,∅,false")
+# ╔═╡ 999ae1fd-5341-4f66-9db2-dec53fa0cd49
+@bind DSM_parameters PlutoUI.combine() do Child
 	
-	# compute the stoichiometric matrix -
-	# the optional expand arguement = should we split reversible reactions? (default: false)
-	(S, species_array, reaction_name_array) = lib.build_stoichiometric_matrix(reaction_array; 
-		expand=true);
-
-	# show -
-	S
-	reaction_name_array
-	species_array
+	md"""
+	\[I\] $(
+		Child(Slider(0:100))
+	) (μM)  K $(
+		Child(Slider(1:1:100))
+	) (mM)  ϵ₂ $(
+		Child(Slider(0.001:0.1:100))
+	) (J/mol) ϵ₃ $(
+		Child(Slider(0.001:0.1:100))
+	) (J/mol) 
+	"""
 end
 
-# ╔═╡ 97b0763d-dcab-4afa-b660-52e18b3d523f
+# ╔═╡ 91a2c43c-3f65-419e-aba2-782cfa98dc4d
 begin
-	(M,R) = size(S)
-	# compute the extreme pathways Tableu -
-	PM = lib.expa(S)
+
+	# get I -
+	Iₒ = DSM_parameters[1]
+	Kd = DSM_parameters[2]
+	ϵ₂ = (DSM_parameters[3])/100
+	ϵ₃ = (DSM_parameters[4])/100
 	
-	# P constaints the extreme pathways (rows) and 𝒩 is the "balanced" array (should be all zeros) -
-	P = PM[:,1:R]
-	N = PM[:,(R+1):end]
+	# setup system -
+	R = 8.314 			# units: J/mol-K
+	T = 273.15 + 25.0 	# units: K
+	β = 1/R*T
+
+	# setup binding parameters for state 3 -
+	n = 2.0
+	
+	# setup energy array -
+	ϵ_array = [
+		0.0 	; # state 1 (just E)
+		-ϵ₂ 	; # state 2 (E bound to S, but no I)
+		-ϵ₃ 	; # state 3 (E bound to I)
+	];
+
+	# compute W -
+	W_array = exp.(-β*ϵ_array)
+
+	# let's compute the state-specific factor array -
+	f_array = [
+		1.0 ; # state 1 
+		1.0 ; # state 2
+		((Iₒ/Kd)^(n))/(1+(Iₒ/Kd)^(n))
+	];
+
+	# compute the θ variable -
+	microstate_array = f_array.*W_array;
+	Z = sum(microstate_array)
+	p_array = (1/Z)*microstate_array
+	θ = p_array[2]
 
 	# show -
-	rank(P)
+	with_terminal() do
+		println("θ = $(θ)")
+	end
+end
+
+# ╔═╡ 6703b17e-5227-42d0-833c-4a8ef10cf144
+let
+
+	# get MM parameter values -
+	E = 1.0 # units: μM
+	Kₘ = 5 	# units: mM
+	kcat = 13.7 # units: s^-1
+	number_of_steps = 1000
+
+	# substrate range -
+	S_array = range(0.0,stop=100.0,length=number_of_steps) |> collect;
+
+	# initialize space -
+	v_array = Array{Float64,1}(undef,number_of_steps)
+
+	# compute the rate -
+	for (i,S) ∈ enumerate(S_array)
+
+		# compute the rate -
+		v_array[i] = (kcat*E)*(S/(S+Kₘ))*θ
+	end
+
+	# plot -
+	plot(S_array,v_array,xlims=(0.0,100.0),ylims=(0.0,14), label="v: I = $(Iₒ) mM and Kd = $(Kd) (mM)")
+	xlabel!("Substrate S (mM)",fontsize=18)
+	ylabel!("Rate v (μM/s)",fontsize=18)
+	
 end
 
 # ╔═╡ ab2bcfd5-3ba7-4388-8a3c-2cb95fba989a
@@ -500,6 +498,12 @@ git-tree-sha1 = "f6250b16881adf048549549fba48b1161acdac8c"
 uuid = "c1c5ebd0-6772-5130-a774-d5fcae4a789d"
 version = "3.100.1+0"
 
+[[deps.LERC_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "bf36f528eec6634efc60d7ec062008f171071434"
+uuid = "88015f11-f218-50d7-93a8-a6af411a945d"
+version = "3.0.0+1"
+
 [[deps.LZO_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "e5b909bcf985c5e2605737d2ce278ed791b89be6"
@@ -579,10 +583,10 @@ uuid = "925c91fb-5dd6-59dd-8e8c-345e74382d89"
 version = "2.52.4+0"
 
 [[deps.Libtiff_jll]]
-deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Pkg", "Zlib_jll", "Zstd_jll"]
-git-tree-sha1 = "340e257aada13f95f98ee352d316c3bed37c8ab9"
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "Pkg", "Zlib_jll", "Zstd_jll"]
+git-tree-sha1 = "c9551dd26e31ab17b86cbd00c2ede019c08758eb"
 uuid = "89763e89-9b03-5906-acba-b20f662cd828"
-version = "4.3.0+0"
+version = "4.3.0+1"
 
 [[deps.Libuuid_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1140,15 +1144,11 @@ version = "0.9.1+5"
 # ╔═╡ Cell order:
 # ╟─6b1ad54f-61e4-490d-9032-7a557e8dc82f
 # ╟─7057c8e4-9e94-4a28-a885-07f5c96ebe39
-# ╠═5338451e-3c4b-4030-bbbb-42eaf4209a89
-# ╟─6970dab5-16bd-4898-b88d-723cb1b3d89e
-# ╠═97b0763d-dcab-4afa-b660-52e18b3d523f
-# ╟─b473b17e-3bf5-4b6c-af24-fe57b5a7e7e9
-# ╠═999ae1fd-5341-4f66-9db2-dec53fa0cd49
-# ╟─b7e5d1a6-57ed-4d09-a039-a4bd12386367
-# ╠═4520fc6e-7305-487e-924d-af22406e6d45
+# ╟─cfca732a-d328-4f81-aa05-9e041a686924
+# ╟─999ae1fd-5341-4f66-9db2-dec53fa0cd49
+# ╟─91a2c43c-3f65-419e-aba2-782cfa98dc4d
+# ╠═6703b17e-5227-42d0-833c-4a8ef10cf144
 # ╠═67f5db98-88d0-11ec-27ac-b57538a166f4
-# ╠═267865de-1b5c-4579-861b-c6c46beb4739
 # ╟─ab2bcfd5-3ba7-4388-8a3c-2cb95fba989a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
