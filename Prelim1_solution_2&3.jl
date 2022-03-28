@@ -25,7 +25,7 @@ end
 
 # ╔═╡ 6b1ad54f-61e4-490d-9032-7a557e8dc82f
 md"""
-## CHEME 5440/7770: Prelim 1 solution 2&3 
+## CHEME 5440/7770: Prelim 1 Q2 
 """
 
 # ╔═╡ 7057c8e4-9e94-4a28-a885-07f5c96ebe39
@@ -37,98 +37,179 @@ Smith School of Chemical and Biomolecular Engineering, Cornell University, Ithac
 # ╔═╡ cfca732a-d328-4f81-aa05-9e041a686924
 md"""
 ##### 2. a） Formulate a three micro-state model for PEK activity
+* __State s = 0__: no effector+no substrate (base state, no activity)
+* __State s = 1__: no effector+substrate (the data shows low activity)
+* __State s = 2__: effector+substrate (activity)
+
+take the form 
+
+$$\hat r_{j} = r_{j}v\left(...\right)_{j}$$
+
+The probability of each microstate is given by
+
+$$p_{i} = \frac{1}{Z} \times f_{i}\exp\left(-\beta\epsilon_{i}\right)\qquad{i=0,1,2,\dots,\mathcal{S}}$$
+
+where
+
+$$W_{i} = \exp\left(-\beta\epsilon_{i}\right)$$
+
+$$Z = \sum_{s=0}^{\mathcal{S}}f_{i}\exp\left(-\beta\epsilon_{i}\right)$$
+
+which gives:
+
+$$p_{i} = \frac{f_{i}\exp\left(-\beta\epsilon_{i}\right)}{\displaystyle \sum_{s=0}^{\mathcal{S}}f_{i}\exp\left(-\beta\epsilon_{i}\right)}\qquad{i=0,1,2,\dots,\mathcal{S}}$$
+
+Given these microstates, we know that enzyme $E$ can catalyze its reaction in microstate $s=1$ and $s=2$, thus:
+
+$$v\left(...\right)_{j} = \frac{f_{1}\exp\left(-\beta\epsilon_{1}\right)+f_{2}\exp\left(-\beta\epsilon_{2}\right)}{\displaystyle \sum_{s=0}^{\mathcal{2}}f_{s}\exp\left(-\beta\epsilon_{s}\right)}$$
+
+let $j = 1$
+
+$$r_{1} = k_{cat}E_{1}(\frac{F6P}{K_{K6P}+F6P})(\frac{ATP}{K_{ATP}+ATP})$$
+
+$$\hat r_{1} = r_{1}v\left(...\right)_{1}$$
+
+
 """
 
-# ╔═╡ 999ae1fd-5341-4f66-9db2-dec53fa0cd49
+# ╔═╡ a8f89a23-9613-4bc3-8ca1-ec86ce4acc33
+md"""
+##### 2. b） Estimate the parameters by using the dataset in Table 1
+From definition we know $\epsilon_{0}=0$, then $W_{0} = 1$ and we also know $f_{0}$ and $f_{1}$ are both set to 1. So I estimate $\epsilon_{1}$, $\epsilon_{2}$, the binding constant Kd and an order parameter n to get $W_{1}$,  $W_{2}$ and $f_{2}$ to match the dataset in table 1.
+"""
+
+# ╔═╡ af80aaae-6a75-45fe-b4b4-01697b6eb7ed
 @bind DSM_parameters PlutoUI.combine() do Child
 	
 	md"""
-	\[I\] $(
-		Child(Slider(0:100))
-	) (μM)  K $(
-		Child(Slider(1:1:100))
-	) (mM)  ϵ₂ $(
-		Child(Slider(0.001:0.1:100))
-	) (J/mol) ϵ₃ $(
-		Child(Slider(0.001:0.1:100))
-	) (J/mol) 
+	  Kd $(
+		Child(Slider(1:0.01:2))
+	) (mM)  W1 $(
+		Child(Slider(0.01:0.001:0.1))
+	)  W2 $(
+		Child(Slider(200:0.1:400))
+	)  
 	"""
 end
 
-# ╔═╡ 91a2c43c-3f65-419e-aba2-782cfa98dc4d
+# ╔═╡ 6a4b7502-e873-4b9f-9789-2ec869b9bccf
+DSM_parameters
+
+# ╔═╡ b30d6a4f-71fa-4d22-80ed-efb4a181de45
 begin
-
-	# get I -
-	Iₒ = DSM_parameters[1]
-	Kd = DSM_parameters[2]
-	ϵ₂ = (DSM_parameters[3])/100
-	ϵ₃ = (DSM_parameters[4])/100
+	# get Effector - A
+    A = [0:0.01:1;]
+	v = A
+	for i in eachindex(A)
+		Kd = DSM_parameters[1]
+		W0 = 1
+		W1 = DSM_parameters[2]# state 1 (E bound to S, but no A)
+		W2 = DSM_parameters[3] # state 2 (E bound to A)
+		
+		# setup system -
+		R = 8.314 			# units: J/mol-K
+		T = 273.15 + 25.0 	# units: K
+		β = 1/R*T
 	
-	# setup system -
-	R = 8.314 			# units: J/mol-K
-	T = 273.15 + 25.0 	# units: K
-	β = 1/R*T
-
-	# setup binding parameters for state 3 -
-	n = 2.0
+		# setup binding parameters for state 2 -
+		n = 2.0
 	
-	# setup energy array -
-	ϵ_array = [
-		0.0 	; # state 1 (just E)
-		-ϵ₂ 	; # state 2 (E bound to S, but no I)
-		-ϵ₃ 	; # state 3 (E bound to I)
-	];
-
-	# compute W -
-	W_array = exp.(-β*ϵ_array)
-
-	# let's compute the state-specific factor array -
-	f_array = [
-		1.0 ; # state 1 
-		1.0 ; # state 2
-		((Iₒ/Kd)^(n))/(1+(Iₒ/Kd)^(n))
-	];
-
-	# compute the θ variable -
-	microstate_array = f_array.*W_array;
-	Z = sum(microstate_array)
-	p_array = (1/Z)*microstate_array
-	θ = p_array[2]
-
+		# compute the state-specific factor-
+		f0 = 1.0 # state 0 
+		f1 = 1.0 # state 1
+	    f2 = ((A[i]/Kd)^(n))/(1+(A[i]/Kd)^(n)) # state 2
+	
+		# compute the v variable -
+		microstate_0 = f0.*W0
+		microstate_1 = f1.*W1
+		microstate_2 = f2.*W2
+		
+		Z = microstate_0 + microstate_1 + microstate_2
+		p1 = (1/Z)*microstate_1
+		p2 = (1/Z)*microstate_2
+		v[i] = p1 + p2
+	end
 	# show -
 	with_terminal() do
-		println("θ = $(θ)")
+		println("v = $(v)")
+	end
+end	
+
+
+# ╔═╡ b3a9a44a-e2b0-406b-a214-2739f2209cb1
+md"""
+Show the r_bar calculated when the concentration of the effector is the same as the ones that are shown in table 1. See if they are matched to each other.
+"""
+
+
+# ╔═╡ 67b511b2-4417-4360-88b6-8ac091966aac
+begin
+# Set up some parameters
+	S1 = 0.1 # units: mM -- concentration for F6P
+	S2 = 2.3 # units: mM -- concentration for ATP
+	E = 0.12 # units: μM 
+	K_F6P = 0.11 # units: mM
+	K_ATP = 0.42 # units: mM
+	kcat = 0.4 # units: s^-1
+	
+# calculate the rate
+	r_bar = (kcat*E)*(S1/(S1+K_F6P))*(S2/(S2+K_ATP))*v*3600
+	
+# show - 
+	with_terminal() do		
+	println("r_bar[1,5,9,18,40,99,100] = $(r_bar[1]),$(r_bar[5]),$(r_bar[9]),$(r_bar[18]),$(r_bar[40]),$(r_bar[99]),$(r_bar[100])")
 	end
 end
+
+
+# ╔═╡ e5369c24-3f8c-4c96-b3be-7f866b6e85ad
+md"""
+##### so the final results I choose are kd = 1.54, W1 = 0.046, W2 = 260.0
+"""
+
+# ╔═╡ a490f30d-5f91-4913-a53e-53ac2b57d129
+md"""
+##### 2. c） Plot the converted data with errorbars
+from the image we can see the proposed model describes the data well except for the second one
+"""
 
 # ╔═╡ 6703b17e-5227-42d0-833c-4a8ef10cf144
-let
+begin
 
-	# get MM parameter values -
-	E = 1.0 # units: μM
-	Kₘ = 5 	# units: mM
-	kcat = 13.7 # units: s^-1
-	number_of_steps = 1000
+	# 3'-5'-AMP concentration -
+	x = 0:0.01:1
+	conc = [0, 0.055, 0.093, 0.181, 0.405, 0.990, 1.0]
+	rate = [3, 6.3, 29.8, 52.0, 60.3, 68.7, 68.9]
+	std = [0.59, 1.2, 5.7, 10.2, 11.8, 13.3, 10.0]
 
-	# substrate range -
-	S_array = range(0.0,stop=100.0,length=number_of_steps) |> collect;
-
-	# initialize space -
-	v_array = Array{Float64,1}(undef,number_of_steps)
-
-	# compute the rate -
-	for (i,S) ∈ enumerate(S_array)
-
-		# compute the rate -
-		v_array[i] = (kcat*E)*(S/(S+Kₘ))*θ
-	end
+	# overall rate -
+	y = r_bar
 
 	# plot -
-	plot(S_array,v_array,xlims=(0.0,100.0),ylims=(0.0,14), label="v: I = $(Iₒ) mM and Kd = $(Kd) (mM)")
-	xlabel!("Substrate S (mM)",fontsize=18)
-	ylabel!("Rate v (μM/s)",fontsize=18)
+	plot(x,y,label="r")
+	plot!(conc,rate,yerror=std,seriestype = :scatter, legend =false)
+	xlabel!("3'-5'-AMP concentration (mM)",fontsize=18)
+	ylabel!("Rate r (μM/h)",fontsize=18)
+
+end
+
+# ╔═╡ b4ef83b4-edbe-4cd4-9711-d4203d139e9f
+md"""
+##### 3. a） convert the <n> values in Table 2
+"""
+
+# ╔═╡ 83ca0089-f0ce-4c03-9f34-8416c230def4
+begin
+	n_array = [19;21;41;67;86;93;93;]; #units: nM from the assume(ii)
+	mc = 2 * 10^(-13) # units:g
+	Vc = 2.75 # units: μm^3
+
+	n_array_new = n_array * Vc / mc * 10^(-15)
 	
 end
+
+# ╔═╡ ab18edbc-08e1-474c-9bf0-cf8fb0e9d78f
+
 
 # ╔═╡ ab2bcfd5-3ba7-4388-8a3c-2cb95fba989a
 html"""
@@ -1145,9 +1226,18 @@ version = "0.9.1+5"
 # ╟─6b1ad54f-61e4-490d-9032-7a557e8dc82f
 # ╟─7057c8e4-9e94-4a28-a885-07f5c96ebe39
 # ╟─cfca732a-d328-4f81-aa05-9e041a686924
-# ╟─999ae1fd-5341-4f66-9db2-dec53fa0cd49
-# ╟─91a2c43c-3f65-419e-aba2-782cfa98dc4d
+# ╟─a8f89a23-9613-4bc3-8ca1-ec86ce4acc33
+# ╟─af80aaae-6a75-45fe-b4b4-01697b6eb7ed
+# ╠═6a4b7502-e873-4b9f-9789-2ec869b9bccf
+# ╠═b30d6a4f-71fa-4d22-80ed-efb4a181de45
+# ╟─b3a9a44a-e2b0-406b-a214-2739f2209cb1
+# ╠═67b511b2-4417-4360-88b6-8ac091966aac
+# ╟─e5369c24-3f8c-4c96-b3be-7f866b6e85ad
+# ╟─a490f30d-5f91-4913-a53e-53ac2b57d129
 # ╠═6703b17e-5227-42d0-833c-4a8ef10cf144
+# ╟─b4ef83b4-edbe-4cd4-9711-d4203d139e9f
+# ╠═83ca0089-f0ce-4c03-9f34-8416c230def4
+# ╠═ab18edbc-08e1-474c-9bf0-cf8fb0e9d78f
 # ╠═67f5db98-88d0-11ec-27ac-b57538a166f4
 # ╟─ab2bcfd5-3ba7-4388-8a3c-2cb95fba989a
 # ╟─00000000-0000-0000-0000-000000000001
