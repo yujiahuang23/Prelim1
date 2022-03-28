@@ -25,7 +25,7 @@ end
 
 # ╔═╡ 6b1ad54f-61e4-490d-9032-7a557e8dc82f
 md"""
-## CHEME 5440/7770: Prelim 1 Q2 
+## CHEME 5440/7770: Prelim 1 Q2&Q3
 """
 
 # ╔═╡ 7057c8e4-9e94-4a28-a885-07f5c96ebe39
@@ -209,7 +209,9 @@ begin
 end
 
 # ╔═╡ ab18edbc-08e1-474c-9bf0-cf8fb0e9d78f
-
+md"""
+##### 3. b） 
+"""
 
 # ╔═╡ ab2bcfd5-3ba7-4388-8a3c-2cb95fba989a
 html"""
@@ -1223,7 +1225,7 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
-# ╟─6b1ad54f-61e4-490d-9032-7a557e8dc82f
+# ╠═6b1ad54f-61e4-490d-9032-7a557e8dc82f
 # ╟─7057c8e4-9e94-4a28-a885-07f5c96ebe39
 # ╟─cfca732a-d328-4f81-aa05-9e041a686924
 # ╟─a8f89a23-9613-4bc3-8ca1-ec86ce4acc33
