@@ -75,7 +75,7 @@ $$\hat r_{1} = r_{1}v\left(...\right)_{1}$$
 # ╔═╡ a8f89a23-9613-4bc3-8ca1-ec86ce4acc33
 md"""
 ##### 2. b） Estimate the parameters by using the dataset in Table 1
-From definition we know $\epsilon_{0}=0$, then $W_{0} = 1$ and we also know $f_{0}$ and $f_{1}$ are both set to 1. So I estimate $\epsilon_{1}$, $\epsilon_{2}$, the binding constant Kd and an order parameter n to get $W_{1}$,  $W_{2}$ and $f_{2}$ to match the dataset in table 1.
+###### From definition we know $\epsilon_{0}=0$, then $W_{0} = 1$ and we also know $f_{0}$ and $f_{1}$ are both set to 1. So I drag the buttons to estimate $\epsilon_{1}$, $\epsilon_{2}$, the binding constant Kd and an order parameter n to get $W_{1}$,  $W_{2}$ and $f_{2}$ to match the dataset in table 1.
 """
 
 # ╔═╡ af80aaae-6a75-45fe-b4b4-01697b6eb7ed
@@ -83,17 +83,22 @@ From definition we know $\epsilon_{0}=0$, then $W_{0} = 1$ and we also know $f_{
 	
 	md"""
 	  Kd $(
-		Child(Slider(1:0.01:2))
+		Child(Slider(1.54:0.01:2))
 	) (mM)  W1 $(
-		Child(Slider(0.01:0.001:0.1))
+		Child(Slider(0.046:0.001:0.1))
 	)  W2 $(
-		Child(Slider(200:0.1:400))
+		Child(Slider(260:0.1:400))
 	)  
 	"""
 end
 
 # ╔═╡ 6a4b7502-e873-4b9f-9789-2ec869b9bccf
 DSM_parameters
+
+# ╔═╡ 0f204a81-a8d5-48d0-8cfb-25fc2beb6b0f
+md"""
+###### calculate $v_{j}$ 
+"""
 
 # ╔═╡ b30d6a4f-71fa-4d22-80ed-efb4a181de45
 begin
@@ -138,7 +143,7 @@ end
 
 # ╔═╡ b3a9a44a-e2b0-406b-a214-2739f2209cb1
 md"""
-Show the r_bar calculated when the concentration of the effector is the same as the ones that are shown in table 1. See if they are matched to each other.
+###### Show the r_bar calculated when the concentration of the effector is the same as the ones that are shown in table 1. See if they are matched to each other.
 """
 
 
@@ -164,13 +169,13 @@ end
 
 # ╔═╡ e5369c24-3f8c-4c96-b3be-7f866b6e85ad
 md"""
-##### so the final results I choose are kd = 1.54, W1 = 0.046, W2 = 260.0
+##### so the final results I choose are kd = 1.54, W1 = 0.046, W2 = 260.0(set the buttons to the numbers respectively to see the final results )
 """
 
 # ╔═╡ a490f30d-5f91-4913-a53e-53ac2b57d129
 md"""
 ##### 2. c） Plot the converted data with errorbars
-from the image we can see the proposed model describes the data well except for the second one
+###### from the image we can see the proposed model describes the data well except for the second one
 """
 
 # ╔═╡ 6703b17e-5227-42d0-833c-4a8ef10cf144
@@ -205,12 +210,12 @@ begin
 	Vc = 2.75 # units: μm^3
 
 	n_array_new = n_array * Vc / mc * 10^(-15)
-	
 end
 
 # ╔═╡ ab18edbc-08e1-474c-9bf0-cf8fb0e9d78f
 md"""
 ##### 3. b） Derive the gain function $\kappa_{x}$ and formulate $\bar u_{i}$
+###### first for $\kappa_{x}$
 from the equation
 
 $$\frac{dm_{i}}{dt}  =  r_{X,i}\bar u_{i} - (\theta_{m,i}+\mu)m_{i}$$
@@ -221,7 +226,195 @@ $$m^*  =  \kappa_{x}(G,...)\bar u(I,k)$$
 Therefore
 
 $$\kappa_{x} = \frac{r_{X,i}}{\theta_{m,i}+\mu}$$
+and also
+
+$$r_{X,i} = V_{max,i}\frac{\left[G_{i}\right]}{K_{X,i}+\left[G_{i}\right]}$$
+where $V_{max,i}\equiv{k_{3,i}}\left[RNAP\right]_{T}$, and $$k_{3,i} \sim \langle e_{X} \rangle L_{i}^{-1}$$
+
+The saturation constant of transcription $K_{X,i}$ (units: conc) is defined as the ratio of elementary rate constants:
+
+$$K_{X,i}\equiv\frac{k_{2,i}+k_{3,i}}{k_{1,i}}$$
+We know that the RNAP dissociation constant $K_{D,i}$:
+
+$$K_{D,i} = \frac{k_{2,i}}{k_{1,i}}$$
+
+for the lac promoter in _E. coli_ is [$K_{D}\sim 550$ nM (units: nM or molecules/cell)]
+###### then for  $\bar u_{i}$
+using the Discrete state model for promoter functions (same as Q2)
+* __State s = 0__: base state, no transcription possible
+* __State s = 1__: RNAP bound to $G_{i}$ at I = 0. (the data shows transcription possible although low)
+* __State s = 2__: RNAP + inducer bound to $G_{i}$ (transcription possible)
+
+
+The probability of each microstate is given by
+
+$$p_{i} = \frac{1}{Z} \times f_{i}\exp\left(-\beta\epsilon_{i}\right)\qquad{i=0,1,2,\dots,\mathcal{S}}$$
+
+where
+
+$$W_{i} = \exp\left(-\beta\epsilon_{i}\right)$$
+
+$$Z = \sum_{s=0}^{\mathcal{S}}f_{i}\exp\left(-\beta\epsilon_{i}\right)$$
+
+which gives:
+
+$$p_{i} = \frac{f_{i}\exp\left(-\beta\epsilon_{i}\right)}{\displaystyle \sum_{s=0}^{\mathcal{S}}f_{i}\exp\left(-\beta\epsilon_{i}\right)}\qquad{i=0,1,2,\dots,\mathcal{S}}$$
+Finally, we relate the probability that promoter $P$ is in microstate $s$ back to the $\bar{u}\left(\dots\right)$ control function by computing the overall probability that the desired event happens, e.g., promoter $P$ undergoes transcription. We know if $\Omega = \left\{1,2,\dots,\mathcal{S}\right\}$, then we can define the subset $\mathcal{A}\subseteq\Omega$ in which the desired event happens (in this case transcription). Given $\mathcal{A}$, the $\bar{u}\left(\dots\right)$ function becomes:
+
+$$\bar{u}=\sum_{s\in{\mathcal{A}}}p_{s}$$
 """
+
+# ╔═╡ bf831143-9801-4655-9f44-fa3a0894684e
+md""" 
+##### 3. c） Use the data in Table 2 to estimate the discrete state promoter model parameters in $\bar u_{i}$ and the gain $\kappa_{x}$(G...)
+"""
+
+# ╔═╡ 954f7319-af75-41d7-911f-ad7bd963ff8c
+@bind RNA_parameters PlutoUI.combine() do Child
+	
+	md"""
+	  Kd_new $(
+		Child(Slider(0.3:0.01:2))
+	) (mM)  W1_new $(
+		Child(Slider(0.1:0.001:0.2))
+	)  W2_new $(
+		Child(Slider(800:0.1:1000))
+	)  
+	"""
+end
+
+# ╔═╡ 4c204465-2fbf-4f28-8033-fcb040d9ca17
+RNA_parameters
+
+# ╔═╡ 609df264-97d0-461c-98df-2c1189d0efa4
+md""" 
+##### calculate $\bar u$
+"""
+
+# ╔═╡ 57c7edef-01b4-4109-9838-704fdae64aa4
+begin
+	# get Inducer - I
+    I = [0:0.0001:1;]
+	u = I
+	
+	for i in eachindex(I)
+		
+		Kd_new = RNA_parameters[1]
+		W0_new = 1
+		W1_new = RNA_parameters[2]# state 1 
+		W2_new = RNA_parameters[3] # state 2 
+		
+		# setup system -
+		R = 8.314 			# units: J/mol-K
+		T = 273.15 + 25.0 	# units: K
+		β = 1/R*T
+	
+		# setup binding parameters for state 2 -
+		n_new = 2.0
+	
+		# compute the state-specific factor-
+		f0_new = 1.0 # state 0 
+		f1_new = 1.0 # state 1
+	    f2_new = ((I[i]/Kd_new)^(n_new))/((1+I[i]/Kd_new)^(n_new)) # state 2
+	
+		# compute the v variable -
+		microstate_0_new = f0_new.*W0_new
+		microstate_1_new = f1_new.*W1_new
+		microstate_2_new = f2_new.*W2_new
+		
+		Z_new = microstate_0_new + microstate_1_new + microstate_2_new
+		p1_new = (1/Z_new)*microstate_1_new
+		p2_new = (1/Z_new)*microstate_2_new
+		u[i] = p1_new + p2_new
+
+	end
+
+	# show -
+	with_terminal() do
+		println("u = $(u)")
+	end
+end
+
+# ╔═╡ d3f67694-5e00-45a7-a0ca-f791bc32706c
+md"""
+##### calculate $\kappa_{x}$(G...) and $m*$, try to find the proper values match the $m*$ to the copy numbers that are given in table 2 when with the same concentration I
+"""
+
+# ╔═╡ 5988fb0e-a0a4-4700-a2b9-2e00edbc4b0d
+begin
+
+	# setup the parameters -
+	parameters = Dict{String, Any}()
+
+	# compute values given or estimate -
+	k₁ = 100.0 	# units: 1/conc-t
+	eₓ = 35.0 	# units: nt/s
+	L = 3075.0 	# units: nt
+	KD = 430.0  # units: nM
+	Kₓ = (eₓ*(1/L) + KD*k₁)/(k₁)
+
+	# get parameters from given -
+	parameters["RNAP_copy_number"] = 4600.0 					# units: copies/cell 
+	parameters["RNAP_elongation_rate"] = eₓ 					# units: nt/s 
+	parameters["gene_coding_length"] = L 						# units: nt 
+	parameters["mRNA_half_life"] = 5*(60)						# units: s 
+	parameters["gene_copy_number"] = 2 						    # units: copies/cell 
+	parameters["saturation_constant_transcription"] = Kₓ 		# units: copies/cell 
+	parameters["doubling_time"] = 40*60                         # units: s
+	
+	# get values from the parameters dictionary -
+	RNAP = parameters["RNAP_copy_number"]
+	eₓ = parameters["RNAP_elongation_rate"]
+	Kₓ = parameters["saturation_constant_transcription"]
+	G = parameters["gene_copy_number"]
+	t_half_life = parameters["mRNA_half_life"]
+	L = parameters["gene_coding_length"]
+    td = parameters["doubling_time"] 
+	
+	
+	# compute Vmax and the constants -
+	Vmax = RNAP*(eₓ)*(1/L)
+	θₓ = -(log(0.5)/t_half_life)
+    μ = log(2)/td 
+
+	# compute r_x,i
+	r_x = Vmax * G/(Kₓ+G)
+	
+	# compute m*
+	m = r_x/(θₓ+μ)*u
+
+	# show - 
+	with_terminal() do		
+	println("m[1,5,50,120,530,2160,10000] = $(m[1]),$(m[5]),$(m[50]),$(m[120]),$(m[530]),$(m[2160]),$(m[10000])")
+	end
+	
+end
+
+# ╔═╡ 7f8d43b8-cb70-4003-a481-919a02726b5a
+md""" 
+##### 3. d） Plot the converted data and the estimated average copy number from the model
+"""
+
+# ╔═╡ b92723f6-aee7-42c3-9b10-1cd886e522fb
+begin
+
+	# 3'-5'-AMP concentration -
+	xx = 0:0.0001:1
+	concI = [0, 0.0005, 0.005,0.012, 0.053, 0.216, 1.0]
+	copynumber = [19, 21, 41, 67, 86, 93, 93]
+	low = [1, 4, 4, 2, 2, 2, 1]
+	high = [1, 5, 3, 2, 2, 2, 1]
+
+	# copynumber -
+	yy = m
+
+	# plot -
+	plot(xx,yy,label="copynumber")
+	plot!(concI,copynumber,yerror=(low,high),seriestype = :scatter, legend = false)
+	xlabel!("IPTG concentration (mM)",fontsize=18)
+	ylabel!("copynumber (copies/cell)",fontsize=18)
+
+end
 
 # ╔═╡ ab2bcfd5-3ba7-4388-8a3c-2cb95fba989a
 html"""
@@ -1237,19 +1430,29 @@ version = "0.9.1+5"
 # ╔═╡ Cell order:
 # ╟─6b1ad54f-61e4-490d-9032-7a557e8dc82f
 # ╟─7057c8e4-9e94-4a28-a885-07f5c96ebe39
-# ╠═cfca732a-d328-4f81-aa05-9e041a686924
+# ╟─cfca732a-d328-4f81-aa05-9e041a686924
 # ╟─a8f89a23-9613-4bc3-8ca1-ec86ce4acc33
 # ╟─af80aaae-6a75-45fe-b4b4-01697b6eb7ed
 # ╠═6a4b7502-e873-4b9f-9789-2ec869b9bccf
-# ╠═b30d6a4f-71fa-4d22-80ed-efb4a181de45
+# ╟─0f204a81-a8d5-48d0-8cfb-25fc2beb6b0f
+# ╟─b30d6a4f-71fa-4d22-80ed-efb4a181de45
 # ╟─b3a9a44a-e2b0-406b-a214-2739f2209cb1
-# ╠═67b511b2-4417-4360-88b6-8ac091966aac
+# ╟─67b511b2-4417-4360-88b6-8ac091966aac
 # ╟─e5369c24-3f8c-4c96-b3be-7f866b6e85ad
 # ╟─a490f30d-5f91-4913-a53e-53ac2b57d129
 # ╠═6703b17e-5227-42d0-833c-4a8ef10cf144
 # ╟─b4ef83b4-edbe-4cd4-9711-d4203d139e9f
 # ╠═83ca0089-f0ce-4c03-9f34-8416c230def4
 # ╟─ab18edbc-08e1-474c-9bf0-cf8fb0e9d78f
+# ╟─bf831143-9801-4655-9f44-fa3a0894684e
+# ╠═954f7319-af75-41d7-911f-ad7bd963ff8c
+# ╟─4c204465-2fbf-4f28-8033-fcb040d9ca17
+# ╟─609df264-97d0-461c-98df-2c1189d0efa4
+# ╟─57c7edef-01b4-4109-9838-704fdae64aa4
+# ╟─d3f67694-5e00-45a7-a0ca-f791bc32706c
+# ╠═5988fb0e-a0a4-4700-a2b9-2e00edbc4b0d
+# ╟─7f8d43b8-cb70-4003-a481-919a02726b5a
+# ╠═b92723f6-aee7-42c3-9b10-1cd886e522fb
 # ╠═67f5db98-88d0-11ec-27ac-b57538a166f4
 # ╟─ab2bcfd5-3ba7-4388-8a3c-2cb95fba989a
 # ╟─00000000-0000-0000-0000-000000000001
