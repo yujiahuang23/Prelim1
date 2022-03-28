@@ -210,17 +210,17 @@ end
 
 # ╔═╡ ab18edbc-08e1-474c-9bf0-cf8fb0e9d78f
 md"""
-##### 3. b） Derive the gain function $\Kappa_{x}$ and formulate $\bar u_{i}$
+##### 3. b） Derive the gain function $\kappa_{x}$ and formulate $\bar u_{i}$
 from the equation
 
 $$\frac{dm_{i}}{dt}  =  r_{X,i}\bar u_{i} - (\theta_{m,i}+\mu)m_{i}$$
 
 we can get steady-state mRNA abundance m*
 
-$$m^*  =  K_{x}(G,...)\bar u(I,k)$$
+$$m^*  =  \kappa_{x}(G,...)\bar u(I,k)$$
 Therefore
 
-$$K_{x} = \frac{r_{X,i}}{\theta_{m,i}+\mu}$$
+$$\kappa_{x} = \frac{r_{X,i}}{\theta_{m,i}+\mu}$$
 """
 
 # ╔═╡ ab2bcfd5-3ba7-4388-8a3c-2cb95fba989a
@@ -1249,7 +1249,7 @@ version = "0.9.1+5"
 # ╠═6703b17e-5227-42d0-833c-4a8ef10cf144
 # ╟─b4ef83b4-edbe-4cd4-9711-d4203d139e9f
 # ╠═83ca0089-f0ce-4c03-9f34-8416c230def4
-# ╠═ab18edbc-08e1-474c-9bf0-cf8fb0e9d78f
+# ╟─ab18edbc-08e1-474c-9bf0-cf8fb0e9d78f
 # ╠═67f5db98-88d0-11ec-27ac-b57538a166f4
 # ╟─ab2bcfd5-3ba7-4388-8a3c-2cb95fba989a
 # ╟─00000000-0000-0000-0000-000000000001
