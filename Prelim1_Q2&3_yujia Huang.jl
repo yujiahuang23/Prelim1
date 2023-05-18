@@ -191,8 +191,8 @@ begin
 	y = r_bar
 
 	# plot -
-	plot(x,y,label="r")
-	plot!(conc,rate,yerror=std,seriestype = :scatter, legend =false)
+	plot(x,y,lw=2.5,legend=:bottomright, label="model")
+	scatter!(conc,rate,yerror=std, label="measured", mc="white")
 	xlabel!("3'-5'-AMP concentration (mM)",fontsize=18)
 	ylabel!("Rate r (μM/h)",fontsize=18)
 
